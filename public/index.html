@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Rony.ai — Your Personal Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: #2a2a3a;
+    --accent: #7c6dff;
+    --accent2: #ff6b9d;
+    --accent-glow: rgba(124, 109, 255, 0.25);
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+    --user-bubble: #1e1e2e;
+    --ai-bubble: #151520;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 10%, rgba(124,109,255,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 50% at 80% 90%, rgba(255,107,157,0.06) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(12px);
+    flex-shrink: 0;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* Rony.ai Logo Icon — uses the uploaded SVG, white on gradient */
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 20px var(--accent-glow);
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .logo-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .logo-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #fff 30%, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header-status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 8px rgba(74,222,128,0.7);
+    animation: pulse-dot 2s infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* API banner removed — key is now stored securely on the server */
+
+  /* ─── CHAT AREA ─── */
+  #chat-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 0;
+    position: relative;
+    z-index: 1;
+    scroll-behavior: smooth;
+  }
+
+  #chat-container::-webkit-scrollbar { width: 4px; }
+  #chat-container::-webkit-scrollbar-track { background: transparent; }
+  #chat-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  #messages {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* ─── WELCOME SCREEN ─── */
+  #welcome {
+    text-align: center;
+    padding: 48px 20px;
+    animation: fade-up 0.6s ease both;
+  }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .welcome-icon {
+    width: 88px; height: 88px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    box-shadow: 0 0 40px var(--accent-glow), 0 0 80px rgba(255,107,157,0.1);
+    animation: float 3s ease-in-out infinite;
+    overflow: hidden;
+  }
+
+  .welcome-icon svg {
+    width: 54px;
+    height: 54px;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .welcome-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.4rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    background: linear-gradient(135deg, #fff 20%, var(--accent) 60%, var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+
+  .welcome-sub {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: 40px;
+    line-height: 1.6;
+  }
+
+  .suggestions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .suggestion-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-align: left;
+    line-height: 1.4;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .suggestion-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--accent-glow), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .suggestion-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .suggestion-btn:hover::before { opacity: 1; }
+
+  .suggestion-icon { font-size: 1.1rem; margin-bottom: 4px; }
+  .suggestion-text { color: var(--muted); font-size: 0.78rem; margin-top: 2px; }
+
+  /* ─── MESSAGE BUBBLES ─── */
+  .message {
+    display: flex;
+    gap: 14px;
+    animation: msg-in 0.35s ease both;
+  }
+
+  @keyframes msg-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .message.user { flex-direction: row-reverse; }
+
+  .avatar {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    overflow: hidden;
+  }
+
+  .avatar.ai {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    box-shadow: 0 0 16px var(--accent-glow);
+  }
+
+  .avatar.ai svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .avatar.user {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    font-size: 16px;
+  }
+
+  .bubble {
+    max-width: 72%;
+    padding: 14px 18px;
+    border-radius: 16px;
+    font-size: 0.92rem;
+    line-height: 1.65;
+    word-break: break-word;
+  }
+
+  .message.ai .bubble {
+    background: var(--ai-bubble);
+    border: 1px solid var(--border);
+    border-top-left-radius: 4px;
+    color: var(--text);
+  }
+
+  .message.user .bubble {
+    background: var(--user-bubble);
+    border: 1px solid rgba(124,109,255,0.2);
+    border-top-right-radius: 4px;
+    color: var(--text);
+  }
+
+  /* ─── TYPING INDICATOR ─── */
+  .typing-indicator {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    padding: 4px 0;
+  }
+
+  .typing-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.6;
+    animation: bounce 1.2s infinite;
+  }
+
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
+    30% { transform: translateY(-6px); opacity: 1; }
+  }
+
+  /* ─── INPUT AREA ─── */
+  #input-area {
+    position: relative;
+    z-index: 10;
+    padding: 16px 20px 20px;
+    background: rgba(10,10,15,0.9);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .input-wrapper {
+    max-width: 760px;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 10px 14px;
+    transition: border-color 0.2s;
+  }
+
+  .input-wrapper:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+
+  #user-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.93rem;
+    resize: none;
+    line-height: 1.5;
+    max-height: 140px;
+    overflow-y: auto;
+  }
+
+  #user-input::placeholder { color: var(--muted); }
+
+  #send-btn {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    box-shadow: 0 0 12px var(--accent-glow);
+  }
+
+  #send-btn:hover { transform: scale(1.05); box-shadow: 0 0 20px var(--accent-glow); }
+  #send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .input-footer {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  /* ─── MODEL SELECTOR ─── */
+  #model-select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    padding: 5px 10px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  #model-select:focus { border-color: var(--accent); }
+
+  /* ─── ERROR ─── */
+  .error-msg {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.83rem;
+    color: #fca5a5;
+    margin-top: 4px;
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ─── CODE BLOCKS ─── */
+  pre {
+    background: #0d0d15;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    overflow-x: auto;
+    margin: 8px 0;
+    font-size: 0.82rem;
+  }
+
+  code { font-family: 'Courier New', monospace; }
+</style>
+</head>
+<body>
+
+<!-- RONY.AI LOGO SVG (inline, reusable) -->
+<svg style="display:none" id="rony-logo-def">
+  <symbol id="rony-icon" viewBox="0 0 716 716">
+    <path d="M508.749 317.399C516.777 287.314 508.991 253.884 485.389 230.282C461.788 206.681 428.36 198.895 398.273 206.923C376.231 184.928 343.39 174.956 311.148 183.596C278.906 192.234 255.45 217.292 247.36 247.361C217.291 255.451 192.233 278.91 183.595 311.149C174.957 343.391 184.927 376.232 206.924 398.274C198.896 428.359 206.683 461.789 230.284 485.391C253.885 508.992 287.313 516.779 317.401 508.75C339.442 530.745 372.286 540.717 404.525 532.079C436.767 523.441 460.223 498.384 468.313 468.315C498.383 460.224 523.44 436.766 532.078 404.526C540.716 372.285 530.747 339.443 508.749 317.402V317.399ZM470.899 244.776C486.892 260.77 493.488 282.601 490.687 303.412L415.577 260.046C412.411 258.218 408.509 258.218 405.345 260.046L317.401 310.82V277.526C317.401 275.191 318.652 273.005 320.676 271.837L387.644 233.174C414.178 218.353 448.346 222.223 470.901 244.776H470.899ZM357.837 311.144L398.275 334.491V381.185L357.837 404.532L317.398 381.185V334.491L357.837 311.144ZM264.776 269.693C265.207 239.305 285.644 211.649 316.453 203.393C338.3 197.54 360.505 202.744 377.127 215.573L302.014 258.937C298.848 260.764 296.898 264.144 296.898 267.798V369.346L268.065 352.699C266.043 351.531 264.776 349.353 264.776 347.017V269.691V269.693ZM203.391 316.454C209.244 294.608 224.854 277.978 244.276 269.999V356.73C244.276 360.384 246.226 363.763 249.392 365.591L337.337 416.365L308.503 433.013C306.481 434.181 303.961 434.188 301.939 433.02L234.971 394.357C208.868 378.789 195.138 347.261 203.391 316.454ZM244.775 470.9C228.781 454.906 222.186 433.075 224.986 412.264L300.096 455.63C303.263 457.457 307.164 457.457 310.328 455.63L398.273 404.856V438.149C398.273 440.485 397.022 442.671 394.997 443.839L328.029 482.502C301.495 497.322 267.327 493.452 244.772 470.9H244.775ZM450.897 445.982C450.466 476.371 430.029 504.027 399.22 512.283C377.373 518.136 355.168 512.932 338.547 500.102L413.659 456.738C416.826 454.911 418.775 451.532 418.775 447.877V346.329L447.609 362.977C449.631 364.145 450.897 366.323 450.897 368.659V445.985V445.982ZM512.282 399.221C506.429 421.068 490.819 437.697 471.397 445.676V358.946C471.397 355.292 469.448 351.912 466.281 350.085L378.336 299.311L407.17 282.663C409.192 281.495 411.712 281.487 413.734 282.655L480.702 321.318C506.805 336.887 520.536 368.415 512.282 399.221Z" fill="white"/>
+  </symbol>
+</svg>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 716 716" xmlns="http://www.w3.org/2000/svg">
+        <use href="#rony-icon"/>
+      </svg>
+    </div>
+    <span class="logo-text">Rony.ai</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <select id="model-select">
+      <option value="llama-3.3-70b-versatile">LLaMA 3.3 70B</option>
+      <option value="llama-3.1-8b-instant">LLaMA 3.1 8B (Fast)</option>
+      <option value="mixtral-8x7b-32768">Mixtral 8x7B</option>
+      <option value="gemma2-9b-it">Gemma 2 9B</option>
+    </select>
+    <div class="header-status">
+      <div class="status-dot"></div>
+      Groq API
+    </div>
+  </div>
+</header>
+
+<!-- API key is now secure on the backend server -->
+
+<!-- CHAT AREA -->
+<div id="chat-container">
+  <div id="messages">
+    <div id="welcome">
+      <div class="welcome-icon">
+        <svg viewBox="0 0 716 716" xmlns="http://www.w3.org/2000/svg">
+          <use href="#rony-icon"/>
+        </svg>
+      </div>
+      <div class="welcome-title">Hello, I'm Rony</div>
+      <div class="welcome-sub">Your AI assistant powered by Groq + LLaMA.<br/>Fast, free, and ready to help.</div>
+      <div class="suggestions">
+        <button class="suggestion-btn" onclick="fillInput(this)">
+          <div class="suggestion-icon">💡</div>
+          <div>Explain a concept</div>
+          <div class="suggestion-text">Make it simple for me</div>
+        </button>
+        <button class="suggestion-btn" onclick="fillInput(this)">
+          <div class="suggestion-icon">✍️</div>
+          <div>Help me write something</div>
+          <div class="suggestion-text">Emails, essays, stories</div>
+        </button>
+        <button class="suggestion-btn" onclick="fillInput(this)">
+          <div class="suggestion-icon">💻</div>
+          <div>Write some code</div>
+          <div class="suggestion-text">Any language, any task</div>
+        </button>
+        <button class="suggestion-btn" onclick="fillInput(this)">
+          <div class="suggestion-icon">🧠</div>
+          <div>Brainstorm ideas</div>
+          <div class="suggestion-text">Let's think together</div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ERROR -->
+<div id="error-area"></div>
+
+<!-- INPUT AREA -->
+<div id="input-area">
+  <div class="input-wrapper">
+    <textarea id="user-input" rows="1" placeholder="Message Rony..."></textarea>
+    <button id="send-btn" onclick="sendMessage()">➤</button>
+  </div>
+  <div class="input-footer">Powered by Rony.ai · Groq · Fast · Private</div>
+</div>
+
+<script>
+  const messagesEl = document.getElementById('messages');
+  const inputEl = document.getElementById('user-input');
+  const sendBtn = document.getElementById('send-btn');
+  const errorArea = document.getElementById('error-area');
+  const welcomeEl = document.getElementById('welcome');
+
+  let history = [];
+
+  inputEl.addEventListener('input', () => {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 140) + 'px';
+  });
+
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  function fillInput(btn) {
+    const text = btn.querySelector('div:nth-child(2)').innerText;
+    inputEl.value = text;
+    inputEl.focus();
+  }
+
+  function getModel() {
+    return document.getElementById('model-select').value;
+  }
+
+  function showError(msg) {
+    errorArea.innerHTML = `<div class="error-msg" style="max-width:760px;margin:4px auto;">⚠️ ${msg}</div>`;
+    setTimeout(() => errorArea.innerHTML = '', 6000);
+  }
+
+  const ronyAvatarSVG = `<svg viewBox="0 0 716 716" xmlns="http://www.w3.org/2000/svg" width="22" height="22"><use href="#rony-icon"/></svg>`;
+
+  function addMessage(role, text) {
+    if (welcomeEl && welcomeEl.parentNode) welcomeEl.remove();
+    const div = document.createElement('div');
+    div.className = `message ${role}`;
+    const avatar = document.createElement('div');
+    avatar.className = `avatar ${role}`;
+    avatar.innerHTML = role === 'ai' ? ronyAvatarSVG : '👤';
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.innerHTML = formatText(text);
+    div.appendChild(avatar);
+    div.appendChild(bubble);
+    messagesEl.appendChild(div);
+    scrollToBottom();
+    return bubble;
+  }
+
+  function formatText(text) {
+    text = text.replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+    text = text.replace(/`([^`]+)`/g, '<code style="background:#1a1a2e;padding:2px 6px;border-radius:4px;">$1</code>');
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/\n/g, '<br>');
+    return text;
+  }
+
+  function addTypingIndicator() {
+    if (welcomeEl && welcomeEl.parentNode) welcomeEl.remove();
+    const div = document.createElement('div');
+    div.className = 'message ai';
+    div.id = 'typing';
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar ai';
+    avatar.innerHTML = ronyAvatarSVG;
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.innerHTML = `<div class="typing-indicator">
+      <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+    </div>`;
+    div.appendChild(avatar);
+    div.appendChild(bubble);
+    messagesEl.appendChild(div);
+    scrollToBottom();
+  }
+
+  function removeTypingIndicator() {
+    const t = document.getElementById('typing');
+    if (t) t.remove();
+  }
+
+  function scrollToBottom() {
+    document.getElementById('chat-container').scrollTop = 999999;
+  }
+
+  async function sendMessage() {
+    const text = inputEl.value.trim();
+    if (!text) return;
+
+    addMessage('user', text);
+    history.push({ role: 'user', content: text });
+    inputEl.value = '';
+    inputEl.style.height = 'auto';
+    sendBtn.disabled = true;
+    addTypingIndicator();
+    errorArea.innerHTML = '';
+
+    try {
+      // ✅ Calls YOUR backend — API key is safe on the server
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: history, model: getModel() })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || `Server error ${response.status}`);
+      }
+
+      history.push({ role: 'assistant', content: data.reply });
+      removeTypingIndicator();
+      addMessage('ai', data.reply);
+
+    } catch (err) {
+      removeTypingIndicator();
+      showError(err.message || 'Something went wrong. Please try again.');
+    } finally {
+      sendBtn.disabled = false;
+      inputEl.focus();
+    }
+  }
+</script>
+</body>
+</html>
