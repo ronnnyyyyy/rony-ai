@@ -242,7 +242,7 @@ code{font-family:"Courier New",monospace;}
             <button class="sg" data-q="Explain a concept to me"><div class="si">💡</div><div>Explain a concept</div><div class="ss">Make it simple</div></button>
             <button class="sg" data-q="Help me write something"><div class="si">✍️</div><div>Help me write</div><div class="ss">Emails, essays, posts</div></button>
             <button class="sg" data-q="Write some code for me"><div class="si">💻</div><div>Write some code</div><div class="ss">Any language</div></button>
-            <button class="sg" data-q="Analyze an image for me"><div class="si">🖼️</div><div>Analyze an image</div><div class="ss">Upload and ask</div></button>
+            <button class="sg" data-q="/imagine a futuristic city at night with neon lights"><div class="si">🎨</div><div>Generate an image</div><div class="ss">Type /imagine anything</div></button>
           </div>
         </div>
       </div>
@@ -252,7 +252,7 @@ code{font-family:"Courier New",monospace;}
       <div class="iw">
         <div id="ipw"><img id="ipt" src="" alt=""/><button class="clri" id="clrimg">✕ Remove</button></div>
         <div class="ir">
-          <textarea id="ui" rows="1" placeholder="Message Rony... (or upload an image)"></textarea>
+          <textarea id="ui" rows="1" placeholder="Message Rony... or type /imagine [description] to generate an image"></textarea>
           <div class="iac">
             <button class="imgb" id="imgbtn">🖼️</button>
             <button id="sndbtn">➤</button>
@@ -449,7 +449,7 @@ code{font-family:"Courier New",monospace;}
   function newChat() {
     convId = null; hist = []; clearImg();
     g('tbt').textContent = 'New Chat';
-    g('msgs').innerHTML = '<div id="wlc"><div class="wl"><img src="' + LOGO + '" alt="Rony.ai"/></div><div class="wt">Hello, I'm Rony</div><div class="ws">Powered by Groq + LLaMA. Fast, smart, ready.<br/>Upload images, ask anything, save everything.</div><div class="sugs"><button class="sg" data-q="Explain a concept to me"><div class="si">💡</div><div>Explain a concept</div><div class="ss">Make it simple</div></button><button class="sg" data-q="Help me write something"><div class="si">✍️</div><div>Help me write</div><div class="ss">Emails, essays, posts</div></button><button class="sg" data-q="Write some code for me"><div class="si">💻</div><div>Write some code</div><div class="ss">Any language</div></button><button class="sg" data-q="Analyze an image for me"><div class="si">🖼️</div><div>Analyze an image</div><div class="ss">Upload and ask</div></button></div></div>';
+    g('msgs').innerHTML = '<div id="wlc"><div class="wl"><img src="' + LOGO + '" alt="Rony.ai"/></div><div class="wt">Hello, I'm Rony</div><div class="ws">Powered by Groq + LLaMA. Fast, smart, ready.<br/>Upload images, ask anything, save everything.</div><div class="sugs"><button class="sg" data-q="Explain a concept to me"><div class="si">💡</div><div>Explain a concept</div><div class="ss">Make it simple</div></button><button class="sg" data-q="Help me write something"><div class="si">✍️</div><div>Help me write</div><div class="ss">Emails, essays, posts</div></button><button class="sg" data-q="Write some code for me"><div class="si">💻</div><div>Write some code</div><div class="ss">Any language</div></button><button class="sg" data-q="/imagine a futuristic city at night with neon lights"><div class="si">🎨</div><div>Generate an image</div><div class="ss">Type /imagine anything</div></button></div></div>';
     g('msgs').querySelectorAll('.sg').forEach(function(b) { b.onclick = function() { g('ui').value = b.getAttribute('data-q'); g('ui').focus(); }; });
     document.querySelectorAll('.ci').forEach(function(i) { i.classList.remove('active'); });
   }
@@ -515,9 +515,54 @@ code{font-family:"Courier New",monospace;}
     return t;
   }
 
+  function addGenImg(src, prompt) {
+    var wlc = g('wlc'); if (wlc) wlc.remove();
+    var msgs = g('msgs');
+    var div = document.createElement('div'); div.className = 'msg ai';
+    var av = document.createElement('div'); av.className = 'av ai';
+    av.innerHTML = '<img src="' + LOGO + '" alt="Rony.ai"/>';
+    var bub = document.createElement('div'); bub.className = 'bub';
+    bub.innerHTML = '<div style="margin-bottom:8px;font-size:.82rem;color:var(--m2);">🎨 Generated: <em>' + esc(prompt) + '</em></div><img src="' + src + '" style="max-width:100%;border-radius:12px;border:1px solid var(--gb);display:block;" alt="generated image"/><div style="margin-top:8px;display:flex;gap:8px;"><a href="' + src + '" download="rony-ai-image.png" style="font-size:.78rem;color:var(--a1);text-decoration:none;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2);padding:5px 12px;border-radius:8px;">⬇ Download</a></div>';
+    div.appendChild(av); div.appendChild(bub); msgs.appendChild(div);
+    g('cc').scrollTop = 999999;
+  }
+
   function sendMsg() {
     var text = g('ui').value.trim();
     if (!text && !imgB64) return;
+
+    // ── /imagine command ──
+    if (text.toLowerCase().startsWith('/imagine ')) {
+      var prompt = text.slice(9).trim();
+      if (!prompt) return;
+      addMsg('user', text);
+      g('ui').value = ''; g('ui').style.height = 'auto';
+      g('sndbtn').disabled = true;
+      addTyping();
+      fetch('/api/imagine', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: prompt })
+      }).then(function(r) { return r.json().then(function(d) { return { ok: r.ok, d: d }; }); })
+      .then(function(r) {
+        if (!r.ok) throw new Error(r.d.error || 'Image generation failed');
+        rmTyping();
+        addGenImg(r.d.image, prompt);
+        hist.push({ role: 'user', content: text });
+        hist.push({ role: 'assistant', content: '[Generated image: ' + prompt + ']' });
+        var isFirst = hist.length <= 2;
+        saveConv(isFirst ? '/imagine ' + prompt : 'Chat');
+      })
+      .catch(function(e) {
+        rmTyping();
+        g('ea').innerHTML = '<div class="em">⚠️ ' + e.message + '</div>';
+        setTimeout(function() { g('ea').innerHTML = ''; }, 6000);
+      })
+      .finally(function() { g('sndbtn').disabled = false; g('ui').focus(); });
+      return;
+    }
+
+    // ── Normal chat ──
     var dispText = text || 'What do you see in this image?';
     var uc;
     if (imgB64) {
