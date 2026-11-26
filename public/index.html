@@ -1,1429 +1,229 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>rony.ai</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet"/>
 <style>
-/* ═══════════════════════════════════════
-   ROOT VARIABLES
-═══════════════════════════════════════ */
-:root {
-  --bg:           #07070d;
-  --surface:      #0f0f18;
-  --surface2:     #17172a;
-  --surface3:     #1e1e32;
-  --border:       #252538;
-  --border2:      #32324a;
-  --accent:       #7c6dff;
-  --accent2:      #ff6b9d;
-  --accent3:      #00d4ff;
-  --glow:         rgba(124,109,255,0.3);
-  --glow2:        rgba(255,107,157,0.2);
-  --text:         #e8e8f2;
-  --text2:        #a0a0c0;
-  --muted:        #5a5a7a;
-  --success:      #4ade80;
-  --error:        #ff5c5c;
-  --radius:       14px;
-  --radius-sm:    8px;
-}
-
-/* ═══════════════════════════════════════
-   RESET & BASE
-═══════════════════════════════════════ */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html, body {
-  height: 100%;
-  overflow: hidden;
-}
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
-
-/* Ambient background glow */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 70% 50% at 10% 0%, rgba(124,109,255,0.07) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 60% at 90% 100%, rgba(255,107,157,0.05) 0%, transparent 55%),
-    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(0,212,255,0.02) 0%, transparent 60%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* ═══════════════════════════════════════
-   SIDEBAR
-═══════════════════════════════════════ */
-#app {
-  display: flex;
-  height: 100vh;
-  position: relative;
-  z-index: 1;
-}
-
-#sidebar {
-  width: 260px;
-  flex-shrink: 0;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  padding: 20px 14px;
-  gap: 8px;
-  transition: transform 0.3s ease;
-}
-
-.sidebar-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px 16px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 6px;
-}
-
-.sidebar-logo-icon {
-  width: 34px; height: 34px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  display: flex; align-items: center; justify-content: center;
-  padding: 6px;
-  box-shadow: 0 0 16px var(--glow);
-  flex-shrink: 0;
-}
-
-.sidebar-logo-icon svg { width: 100%; height: 100%; }
-.sidebar-logo-icon svg path { fill: white; }
-
-.sidebar-brand {
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: 1.1rem;
-  letter-spacing: -0.03em;
-  background: linear-gradient(135deg, #fff, var(--accent));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-#new-chat-btn {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 10px 14px;
-  background: linear-gradient(135deg, rgba(124,109,255,0.15), rgba(255,107,157,0.1));
-  border: 1px solid rgba(124,109,255,0.3);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  width: 100%;
-}
-
-#new-chat-btn:hover {
-  background: linear-gradient(135deg, rgba(124,109,255,0.25), rgba(255,107,157,0.18));
-  border-color: var(--accent);
-  box-shadow: 0 0 12px var(--glow);
-}
-
-.sidebar-section-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
-  padding: 10px 10px 4px;
-}
-
-#chat-history {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-#chat-history::-webkit-scrollbar { width: 3px; }
-#chat-history::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
-
-.history-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 12px;
-  border-radius: var(--radius-sm);
-  font-size: 0.82rem;
-  color: var(--text2);
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  border: 1px solid transparent;
-}
-
-.history-item:hover {
-  background: var(--surface2);
-  color: var(--text);
-  border-color: var(--border);
-}
-
-.history-item.active {
-  background: var(--surface2);
-  color: var(--text);
-  border-color: var(--border2);
-}
-
-.history-icon { font-size: 0.8rem; opacity: 0.6; flex-shrink: 0; }
-
-/* API Key section in sidebar */
-.sidebar-api-section {
-  border-top: 1px solid var(--border);
-  padding-top: 12px;
-  margin-top: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.api-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.api-status-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--muted);
-  transition: background 0.3s, box-shadow 0.3s;
-}
-
-.api-status-dot.ok {
-  background: var(--success);
-  box-shadow: 0 0 6px rgba(74,222,128,0.7);
-}
-
-.api-status-dot.error {
-  background: var(--error);
-  box-shadow: 0 0 6px rgba(255,92,92,0.7);
-}
-
-#api-key-input {
-  width: 100%;
-  background: var(--surface2);
-  border: 1px solid var(--border2);
-  border-radius: var(--radius-sm);
-  padding: 8px 10px;
-  color: var(--text);
-  font-family: 'DM Mono', 'Courier New', monospace;
-  font-size: 0.75rem;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-#api-key-input:focus { border-color: var(--accent); }
-#api-key-input::placeholder { color: var(--muted); }
-
-.api-hint {
-  font-size: 0.7rem;
-  color: var(--muted);
-  line-height: 1.4;
-}
-
-.api-hint a {
-  color: var(--accent);
-  text-decoration: none;
-}
-
-.api-hint a:hover { text-decoration: underline; }
-
-/* Model select in sidebar */
-.model-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-top: 10px;
-}
-
-#model-select {
-  width: 100%;
-  background: var(--surface2);
-  border: 1px solid var(--border2);
-  border-radius: var(--radius-sm);
-  color: var(--text2);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.8rem;
-  padding: 7px 10px;
-  outline: none;
-  cursor: pointer;
-  transition: border-color 0.2s;
-}
-
-#model-select:focus { border-color: var(--accent); }
-
-/* ═══════════════════════════════════════
-   MAIN CONTENT
-═══════════════════════════════════════ */
-#main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  min-width: 0;
-}
-
-/* ─── TOP BAR ─── */
-#topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 24px;
-  border-bottom: 1px solid var(--border);
-  background: rgba(7,7,13,0.8);
-  backdrop-filter: blur(16px);
-  flex-shrink: 0;
-}
-
-.topbar-title {
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: var(--text2);
-  letter-spacing: -0.01em;
-}
-
-.topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.model-badge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
-  background: var(--surface2);
-  border: 1px solid var(--border2);
-  border-radius: 20px;
-  font-size: 0.73rem;
-  color: var(--text2);
-}
-
-.model-badge-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--success);
-  box-shadow: 0 0 6px rgba(74,222,128,0.7);
-  animation: pulse-dot 2s infinite;
-}
-
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-
-.clear-btn {
-  padding: 5px 12px;
-  background: transparent;
-  border: 1px solid var(--border2);
-  border-radius: 20px;
-  color: var(--muted);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.73rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.clear-btn:hover {
-  border-color: var(--error);
-  color: var(--error);
-}
-
-/* ─── CHAT AREA ─── */
-#chat-scroll {
-  flex: 1;
-  overflow-y: auto;
-  padding: 32px 0 16px;
-  scroll-behavior: smooth;
-}
-
-#chat-scroll::-webkit-scrollbar { width: 4px; }
-#chat-scroll::-webkit-scrollbar-track { background: transparent; }
-#chat-scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
-
-#messages {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 0 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-}
-
-/* ─── WELCOME ─── */
-#welcome {
-  text-align: center;
-  padding: 60px 20px 40px;
-  animation: fadeUp 0.5s ease both;
-}
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.welcome-orb {
-  width: 88px; height: 88px;
-  border-radius: 24px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 28px;
-  padding: 16px;
-  box-shadow:
-    0 0 0 1px rgba(124,109,255,0.3),
-    0 0 40px var(--glow),
-    0 0 80px var(--glow2);
-  animation: floatOrb 4s ease-in-out infinite;
-}
-
-@keyframes floatOrb {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  33% { transform: translateY(-8px) rotate(1deg); }
-  66% { transform: translateY(-4px) rotate(-1deg); }
-}
-
-.welcome-orb svg { width: 100%; height: 100%; }
-.welcome-orb svg path { fill: white; }
-
-.welcome-h1 {
-  font-family: 'Syne', sans-serif;
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 800;
-  letter-spacing: -0.05em;
-  background: linear-gradient(135deg, #ffffff 0%, var(--accent) 50%, var(--accent2) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 12px;
-  line-height: 1.1;
-}
-
-.welcome-sub {
-  color: var(--text2);
-  font-size: 1rem;
-  line-height: 1.6;
-  max-width: 460px;
-  margin: 0 auto 40px;
-}
-
-.suggestion-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  max-width: 560px;
-  margin: 0 auto;
-}
-
-.sug-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px 18px;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
-  overflow: hidden;
-}
-
-.sug-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(124,109,255,0.08), transparent);
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.sug-card:hover {
-  border-color: rgba(124,109,255,0.5);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-}
-
-.sug-card:hover::after { opacity: 1; }
-
-.sug-icon { font-size: 1.3rem; margin-bottom: 6px; }
-.sug-title { font-size: 0.85rem; font-weight: 500; color: var(--text); margin-bottom: 3px; }
-.sug-desc { font-size: 0.75rem; color: var(--muted); }
-
-/* ─── MESSAGES ─── */
-.msg-row {
-  display: flex;
-  gap: 14px;
-  animation: msgIn 0.3s ease both;
-}
-
-@keyframes msgIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.msg-row.user { flex-direction: row-reverse; }
-
-.msg-avatar {
-  width: 36px; height: 36px;
-  border-radius: 10px;
-  flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 15px;
-  margin-top: 2px;
-}
-
-.msg-avatar.ai {
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  box-shadow: 0 0 14px var(--glow);
-  padding: 7px;
-}
-
-.msg-avatar.ai svg { width: 100%; height: 100%; }
-.msg-avatar.ai svg path { fill: white; }
-
-.msg-avatar.user {
-  background: var(--surface3);
-  border: 1px solid var(--border2);
-  font-size: 18px;
-}
-
-.msg-body { max-width: 75%; display: flex; flex-direction: column; gap: 4px; }
-
-.msg-name {
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-  padding: 0 4px;
-}
-
-.msg-row.user .msg-name { text-align: right; }
-
-.msg-bubble {
-  padding: 14px 18px;
-  border-radius: 16px;
-  font-size: 0.92rem;
-  line-height: 1.7;
-  word-break: break-word;
-}
-
-.msg-row.ai .msg-bubble {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-top-left-radius: 4px;
-  color: var(--text);
-}
-
-.msg-row.user .msg-bubble {
-  background: var(--surface2);
-  border: 1px solid var(--border2);
-  border-top-right-radius: 4px;
-  color: var(--text);
-}
-
-/* ─── TYPING ─── */
-.typing-dots {
-  display: flex;
-  gap: 5px;
-  align-items: center;
-  padding: 6px 2px;
-}
-
-.typing-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--accent);
-  animation: typeBounce 1.3s ease-in-out infinite;
-}
-
-.typing-dot:nth-child(2) { animation-delay: 0.18s; background: #9e8fff; }
-.typing-dot:nth-child(3) { animation-delay: 0.36s; background: var(--accent2); }
-
-@keyframes typeBounce {
-  0%, 60%, 100% { transform: translateY(0); opacity: 0.35; }
-  30% { transform: translateY(-7px); opacity: 1; }
-}
-
-/* ─── CODE IN MESSAGES ─── */
-.msg-bubble pre {
-  background: #0a0a14;
-  border: 1px solid var(--border2);
-  border-radius: 10px;
-  padding: 14px 16px;
-  overflow-x: auto;
-  margin: 10px 0;
-  font-size: 0.8rem;
-}
-
-.msg-bubble code {
-  font-family: 'Courier New', monospace;
-}
-
-.msg-bubble :not(pre) > code {
-  background: rgba(124,109,255,0.15);
-  border: 1px solid rgba(124,109,255,0.2);
-  padding: 2px 6px;
-  border-radius: 5px;
-  font-size: 0.83em;
-}
-
-.msg-bubble strong { color: #fff; }
-
-.msg-bubble ul, .msg-bubble ol {
-  padding-left: 20px;
-  margin: 6px 0;
-}
-
-.msg-bubble li { margin: 3px 0; }
-
-/* ─── INPUT AREA ─── */
-#input-zone {
-  flex-shrink: 0;
-  padding: 16px 24px 20px;
-  background: rgba(7,7,13,0.8);
-  backdrop-filter: blur(16px);
-  border-top: 1px solid var(--border);
-}
-
-.input-box {
-  max-width: 800px;
-  margin: 0 auto;
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: 18px;
-  display: flex;
-  align-items: flex-end;
-  gap: 10px;
-  padding: 12px 14px;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.input-box:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(124,109,255,0.15);
-}
-
-#user-input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.93rem;
-  line-height: 1.5;
-  resize: none;
-  min-height: 24px;
-  max-height: 160px;
-  padding: 0;
-}
-
-#user-input::placeholder { color: var(--muted); }
-
-#send-btn {
-  width: 40px; height: 40px;
-  border-radius: 12px;
-  border: none;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  color: white;
-  font-size: 15px;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.2s;
-  box-shadow: 0 0 16px var(--glow);
-}
-
-#send-btn:hover:not(:disabled) {
-  transform: scale(1.07);
-  box-shadow: 0 0 24px var(--glow);
-}
-
-#send-btn:active:not(:disabled) { transform: scale(0.95); }
-
-#send-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-.input-footer {
-  max-width: 800px;
-  margin: 8px auto 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.7rem;
-  color: var(--muted);
-}
-
-.input-footer-left { display: flex; align-items: center; gap: 6px; }
-.key-shortcut {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 1px 5px;
-  font-size: 0.65rem;
-  color: var(--muted);
-}
-
-/* ─── TOAST / ERROR ─── */
-#toast-container {
-  position: fixed;
-  bottom: 90px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 999;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: center;
-  pointer-events: none;
-}
-
-.toast {
-  padding: 10px 18px;
-  border-radius: 10px;
-  font-size: 0.83rem;
-  font-weight: 500;
-  animation: toastIn 0.3s ease;
-  pointer-events: auto;
-  max-width: 420px;
-  text-align: center;
-}
-
-@keyframes toastIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.toast.error {
-  background: rgba(255,92,92,0.12);
-  border: 1px solid rgba(255,92,92,0.35);
-  color: #ff9e9e;
-}
-
-.toast.success {
-  background: rgba(74,222,128,0.1);
-  border: 1px solid rgba(74,222,128,0.3);
-  color: #86efac;
-}
-
-/* ─── MOBILE TOGGLE ─── */
-#sidebar-toggle {
-  display: none;
-  background: transparent;
-  border: 1px solid var(--border2);
-  border-radius: var(--radius-sm);
-  color: var(--text2);
-  padding: 6px 10px;
-  cursor: pointer;
-  font-size: 0.85rem;
-}
-
-/* ─── SCROLLBAR for lists ─── */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
-
-@media (max-width: 680px) {
-  #sidebar {
-    position: fixed;
-    left: 0; top: 0; bottom: 0;
-    z-index: 100;
-    transform: translateX(-100%);
-  }
-
-  #sidebar.open { transform: translateX(0); }
-
-  #sidebar-toggle { display: flex; }
-
-  .suggestion-grid { grid-template-columns: 1fr; }
-  #messages { padding: 0 14px; }
-  #topbar { padding: 12px 16px; }
-  #input-zone { padding: 12px 14px 16px; }
-}
+:root{--bg:#0b0b12;--s:#14141f;--s2:#1c1c2b;--b:#26263a;--t:#ececf5;--m:#8686a3;--a:#7c6dff;--a2:#ff6b9d;--err:#ff8585}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--t);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--a);outline-offset:2px}
+.logo{width:34px;height:34px;border-radius:10px;padding:6px;background:linear-gradient(135deg,var(--a),var(--a2));flex:none}
+.logo svg{width:100%;height:100%;fill:#fff}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.15rem;letter-spacing:-.02em}
+.btn{border:0;border-radius:10px;padding:10px 16px;cursor:pointer;font-weight:600;background:linear-gradient(135deg,var(--a),var(--a2));color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+.ghost{background:var(--s2);border:1px solid var(--b);font-weight:500}
+input,textarea,select{background:var(--s2);border:1px solid var(--b);border-radius:10px;padding:10px 12px;width:100%}
+/* auth */
+#auth{position:fixed;inset:0;display:grid;place-items:center;background:var(--bg);z-index:5;padding:16px}
+.card{width:min(390px,100%);background:var(--s);border:1px solid var(--b);border-radius:16px;padding:28px;display:grid;gap:14px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--s2);border-radius:10px;padding:3px}
+.tabs button{border:0;background:none;padding:8px;border-radius:8px;cursor:pointer;color:var(--m)}
+.tabs button.on{background:var(--b);color:var(--t)}
+#authForm{display:grid;gap:12px}
+#authErr{color:var(--err);font-size:.85rem;min-height:1.2em}
+/* app */
+#app{display:none;height:100%}
+#app.on{display:flex}
+#side{width:250px;background:var(--s);border-right:1px solid var(--b);padding:16px 12px;display:flex;flex-direction:column;gap:10px}
+#hist{flex:1;overflow:auto;display:grid;gap:2px;align-content:start}
+.h{padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--m);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.88rem}
+.h:hover,.h.on{background:var(--s2);color:var(--t)}
+.me{border-top:1px solid var(--b);padding-top:12px;display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--m)}
+.me button{background:none;border:0;color:var(--m);cursor:pointer;text-decoration:underline}
+#main{flex:1;min-width:0;display:flex;flex-direction:column}
+#top{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--b)}
+#top select{width:auto;max-width:55%}
+#msgs{flex:1;overflow:auto;padding:24px 20px}
+.wrap{max-width:780px;margin:0 auto;display:grid;gap:20px}
+.row{display:flex;gap:12px}
+.row.user{flex-direction:row-reverse}
+.bub{max-width:80%;padding:12px 16px;border-radius:14px;background:var(--s);border:1px solid var(--b);overflow-wrap:anywhere}
+.row.user .bub{background:var(--s2)}
+.row.err .bub{border-color:var(--err);color:var(--err)}
+.bub img{max-width:100%;border-radius:10px;display:block}
+.bub pre{background:#07070c;border:1px solid var(--b);border-radius:8px;padding:12px;overflow:auto;margin:8px 0;font-size:.85rem}
+.bub code{font-family:ui-monospace,Menlo,Consolas,monospace}
+.empty{text-align:center;margin-top:12vh;display:grid;gap:10px;justify-items:center}
+.empty .logo{width:64px;height:64px;padding:12px;border-radius:18px}
+.empty h1{font-size:1.8rem;letter-spacing:-.03em}
+.empty p{color:var(--m)}
+#bar{padding:14px 20px 18px;border-top:1px solid var(--b)}
+#bar .wrap{display:flex;gap:10px;align-items:flex-end}
+#in{resize:none;max-height:150px}
+@media(max-width:700px){#side{display:none}.bub{max-width:92%}}
+@media(prefers-reduced-motion:no-preference){.dots{animation:p 1s infinite}@keyframes p{50%{opacity:.35}}}
 </style>
 </head>
 <body>
 
+<div id="auth">
+  <div class="card">
+    <div class="brand"><div class="logo"></div>rony.ai</div>
+    <div class="tabs"><button id="tLogin" class="on" type="button">Log in</button><button id="tSignup" type="button">Sign up</button></div>
+    <form id="authForm">
+      <input id="aName" placeholder="Your name" autocomplete="name" hidden>
+      <input id="aEmail" type="email" placeholder="Email" autocomplete="email" required>
+      <input id="aPass" type="password" placeholder="Password (6+ characters)" autocomplete="current-password" required>
+      <div id="authErr" role="alert"></div>
+      <button class="btn" id="aGo">Log in</button>
+    </form>
+  </div>
+</div>
+
 <div id="app">
-
-  <!-- ══════════ SIDEBAR ══════════ -->
-  <aside id="sidebar">
-    <div class="sidebar-logo">
-      <div class="sidebar-logo-icon">
-        <svg viewBox="0 0 716 716" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M508.749 317.399C516.777 287.314 508.991 253.884 485.389 230.282C461.788 206.681 428.36 198.895 398.273 206.923C376.231 184.928 343.39 174.956 311.148 183.596C278.906 192.234 255.45 217.292 247.36 247.361C217.291 255.451 192.233 278.91 183.595 311.149C174.957 343.391 184.927 376.232 206.924 398.274C198.896 428.359 206.683 461.789 230.284 485.391C253.885 508.992 287.313 516.779 317.401 508.75C339.442 530.745 372.286 540.717 404.525 532.079C436.767 523.441 460.223 498.384 468.313 468.315C498.383 460.224 523.44 436.766 532.078 404.526C540.716 372.285 530.747 339.443 508.749 317.402V317.399ZM470.899 244.776C486.892 260.77 493.488 282.601 490.687 303.412L415.577 260.046C412.411 258.218 408.509 258.218 405.345 260.046L317.401 310.82V277.526C317.401 275.191 318.652 273.005 320.676 271.837L387.644 233.174C414.178 218.353 448.346 222.223 470.901 244.776H470.899ZM357.837 311.144L398.275 334.491V381.185L357.837 404.532L317.398 381.185V334.491L357.837 311.144ZM264.776 269.693C265.207 239.305 285.644 211.649 316.453 203.393C338.3 197.54 360.505 202.744 377.127 215.573L302.014 258.937C298.848 260.764 296.898 264.144 296.898 267.798V369.346L268.065 352.699C266.043 351.531 264.776 349.353 264.776 347.017V269.691V269.693ZM203.391 316.454C209.244 294.608 224.854 277.978 244.276 269.999V356.73C244.276 360.384 246.226 363.763 249.392 365.591L337.337 416.365L308.503 433.013C306.481 434.181 303.961 434.188 301.939 433.02L234.971 394.357C208.868 378.789 195.138 347.261 203.391 316.454ZM244.775 470.9C228.781 454.906 222.186 433.075 224.986 412.264L300.096 455.63C303.263 457.457 307.164 457.457 310.328 455.63L398.273 404.856V438.149C398.273 440.485 397.022 442.671 394.997 443.839L328.029 482.502C301.495 497.322 267.327 493.452 244.772 470.9H244.775ZM450.897 445.982C450.466 476.371 430.029 504.027 399.22 512.283C377.373 518.136 355.168 512.932 338.547 500.102L413.659 456.738C416.826 454.911 418.775 451.532 418.775 447.877V346.329L447.609 362.977C449.631 364.145 450.897 366.323 450.897 368.659V445.985V445.982ZM512.282 399.221C506.429 421.068 490.819 437.697 471.397 445.676V358.946C471.397 355.292 469.448 351.912 466.281 350.085L378.336 299.311L407.17 282.663C409.192 281.495 411.712 281.487 413.734 282.655L480.702 321.318C506.805 336.887 520.536 368.415 512.282 399.221Z"/>
-        </svg>
-      </div>
-      <span class="sidebar-brand">rony.ai</span>
-    </div>
-
-    <button id="new-chat-btn" onclick="newChat()">
-      ✦ &nbsp;New Chat
-    </button>
-
-    <div class="sidebar-section-label">Recent</div>
-
-    <div id="chat-history">
-      <!-- History items injected here -->
-    </div>
-
-    <!-- API Key + Model config -->
-    <div class="sidebar-api-section">
-      <div class="model-label">AI Model</div>
-      <select id="model-select">
-        <option value="llama-3.3-70b-versatile">LLaMA 3.3 70B ⚡ Best</option>
-        <option value="llama-3.1-8b-instant">LLaMA 3.1 8B · Fast</option>
-      </select>
-
-      <div class="api-label" style="margin-top:10px;">
-        <div class="api-status-dot" id="api-dot"></div>
-        Groq API Key (Free)
-      </div>
-      <input
-        type="password"
-        id="api-key-input"
-        placeholder="gsk_..."
-        oninput="onKeyInput()"
-        autocomplete="off"
-        spellcheck="false"
-      />
-      <div class="api-hint">
-        Free key at <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a>
-      </div>
-    </div>
+  <aside id="side">
+    <div class="brand"><div class="logo"></div>rony.ai</div>
+    <button class="btn" id="newBtn">New chat</button>
+    <div id="hist"></div>
+    <div class="me"><span id="who"></span><button id="out">Log out</button></div>
   </aside>
-
-  <!-- ══════════ MAIN ══════════ -->
   <main id="main">
-
-    <!-- TOP BAR -->
-    <div id="topbar">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <button id="sidebar-toggle" onclick="toggleSidebar()">☰</button>
-        <span class="topbar-title" id="topbar-title">New Conversation</span>
-      </div>
-      <div class="topbar-right">
-        <div class="model-badge">
-          <div class="model-badge-dot"></div>
-          <span id="model-badge-label">LLaMA 3.3 70B</span>
-        </div>
-        <button class="clear-btn" onclick="clearChat()">Clear</button>
-      </div>
-    </div>
-
-    <!-- CHAT SCROLL -->
-    <div id="chat-scroll">
-      <div id="messages">
-        <div id="welcome">
-          <div class="welcome-orb">
-            <svg viewBox="0 0 716 716" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M508.749 317.399C516.777 287.314 508.991 253.884 485.389 230.282C461.788 206.681 428.36 198.895 398.273 206.923C376.231 184.928 343.39 174.956 311.148 183.596C278.906 192.234 255.45 217.292 247.36 247.361C217.291 255.451 192.233 278.91 183.595 311.149C174.957 343.391 184.927 376.232 206.924 398.274C198.896 428.359 206.683 461.789 230.284 485.391C253.885 508.992 287.313 516.779 317.401 508.75C339.442 530.745 372.286 540.717 404.525 532.079C436.767 523.441 460.223 498.384 468.313 468.315C498.383 460.224 523.44 436.766 532.078 404.526C540.716 372.285 530.747 339.443 508.749 317.402V317.399ZM470.899 244.776C486.892 260.77 493.488 282.601 490.687 303.412L415.577 260.046C412.411 258.218 408.509 258.218 405.345 260.046L317.401 310.82V277.526C317.401 275.191 318.652 273.005 320.676 271.837L387.644 233.174C414.178 218.353 448.346 222.223 470.901 244.776H470.899ZM357.837 311.144L398.275 334.491V381.185L357.837 404.532L317.398 381.185V334.491L357.837 311.144ZM264.776 269.693C265.207 239.305 285.644 211.649 316.453 203.393C338.3 197.54 360.505 202.744 377.127 215.573L302.014 258.937C298.848 260.764 296.898 264.144 296.898 267.798V369.346L268.065 352.699C266.043 351.531 264.776 349.353 264.776 347.017V269.691V269.693ZM203.391 316.454C209.244 294.608 224.854 277.978 244.276 269.999V356.73C244.276 360.384 246.226 363.763 249.392 365.591L337.337 416.365L308.503 433.013C306.481 434.181 303.961 434.188 301.939 433.02L234.971 394.357C208.868 378.789 195.138 347.261 203.391 316.454ZM244.775 470.9C228.781 454.906 222.186 433.075 224.986 412.264L300.096 455.63C303.263 457.457 307.164 457.457 310.328 455.63L398.273 404.856V438.149C398.273 440.485 397.022 442.671 394.997 443.839L328.029 482.502C301.495 497.322 267.327 493.452 244.772 470.9H244.775ZM450.897 445.982C450.466 476.371 430.029 504.027 399.22 512.283C377.373 518.136 355.168 512.932 338.547 500.102L413.659 456.738C416.826 454.911 418.775 451.532 418.775 447.877V346.329L447.609 362.977C449.631 364.145 450.897 366.323 450.897 368.659V445.985V445.982ZM512.282 399.221C506.429 421.068 490.819 437.697 471.397 445.676V358.946C471.397 355.292 469.448 351.912 466.281 350.085L378.336 299.311L407.17 282.663C409.192 281.495 411.712 281.487 413.734 282.655L480.702 321.318C506.805 336.887 520.536 368.415 512.282 399.221Z"/>
-            </svg>
-          </div>
-          <h1 class="welcome-h1">rony.ai</h1>
-          <p class="welcome-sub">Your personal AI — powered by Groq (free).<br/>Paste your free API key in the sidebar, then start chatting.</p>
-          <div class="suggestion-grid">
-            <div class="sug-card" onclick="suggest('Explain quantum computing in simple terms')">
-              <div class="sug-icon">⚛️</div>
-              <div class="sug-title">Explain a concept</div>
-              <div class="sug-desc">Break down complex topics simply</div>
-            </div>
-            <div class="sug-card" onclick="suggest('Write a professional email to reschedule a meeting')">
-              <div class="sug-icon">✍️</div>
-              <div class="sug-title">Write for me</div>
-              <div class="sug-desc">Emails, essays, stories & more</div>
-            </div>
-            <div class="sug-card" onclick="suggest('Write a Python function to sort a list of dictionaries by a key')">
-              <div class="sug-icon">💻</div>
-              <div class="sug-title">Code help</div>
-              <div class="sug-desc">Any language, debug or create</div>
-            </div>
-            <div class="sug-card" onclick="suggest('Give me 5 creative business ideas for 2025')">
-              <div class="sug-icon">🧠</div>
-              <div class="sug-title">Brainstorm ideas</div>
-              <div class="sug-desc">Generate & explore concepts</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- INPUT ZONE -->
-    <div id="input-zone">
-      <div class="input-box">
-        <textarea
-          id="user-input"
-          rows="1"
-          placeholder="Message rony.ai…"
-        ></textarea>
-        <button id="send-btn" onclick="sendMessage()" title="Send (Enter)">
-          ➤
-        </button>
-      </div>
-      <div class="input-footer">
-        <div class="input-footer-left">
-          <span class="key-shortcut">Enter</span> to send &nbsp;·&nbsp;
-          <span class="key-shortcut">Shift+Enter</span> for new line
-        </div>
-        <span>rony.ai · Groq · 100% Free</span>
-      </div>
-    </div>
-
+    <div id="top"><button class="btn ghost" id="newBtn2">New chat</button><select id="model" aria-label="Model"></select></div>
+    <div id="msgs"><div class="wrap" id="list"></div></div>
+    <div id="bar"><div class="wrap">
+      <textarea id="in" rows="1" placeholder="Message rony.ai. Type /imagine to make an image."></textarea>
+      <button class="btn" id="send">Send</button>
+    </div></div>
   </main>
 </div>
 
-<!-- TOAST -->
-<div id="toast-container"></div>
-
-<!-- ════════════════════════ LOGO SVG TEMPLATE ════════════════════════ -->
-<template id="logo-svg-tpl">
-  <svg viewBox="0 0 716 716" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M508.749 317.399C516.777 287.314 508.991 253.884 485.389 230.282C461.788 206.681 428.36 198.895 398.273 206.923C376.231 184.928 343.39 174.956 311.148 183.596C278.906 192.234 255.45 217.292 247.36 247.361C217.291 255.451 192.233 278.91 183.595 311.149C174.957 343.391 184.927 376.232 206.924 398.274C198.896 428.359 206.683 461.789 230.284 485.391C253.885 508.992 287.313 516.779 317.401 508.75C339.442 530.745 372.286 540.717 404.525 532.079C436.767 523.441 460.223 498.384 468.313 468.315C498.383 460.224 523.44 436.766 532.078 404.526C540.716 372.285 530.747 339.443 508.749 317.402V317.399ZM470.899 244.776C486.892 260.77 493.488 282.601 490.687 303.412L415.577 260.046C412.411 258.218 408.509 258.218 405.345 260.046L317.401 310.82V277.526C317.401 275.191 318.652 273.005 320.676 271.837L387.644 233.174C414.178 218.353 448.346 222.223 470.901 244.776H470.899ZM357.837 311.144L398.275 334.491V381.185L357.837 404.532L317.398 381.185V334.491L357.837 311.144ZM264.776 269.693C265.207 239.305 285.644 211.649 316.453 203.393C338.3 197.54 360.505 202.744 377.127 215.573L302.014 258.937C298.848 260.764 296.898 264.144 296.898 267.798V369.346L268.065 352.699C266.043 351.531 264.776 349.353 264.776 347.017V269.691V269.693ZM203.391 316.454C209.244 294.608 224.854 277.978 244.276 269.999V356.73C244.276 360.384 246.226 363.763 249.392 365.591L337.337 416.365L308.503 433.013C306.481 434.181 303.961 434.188 301.939 433.02L234.971 394.357C208.868 378.789 195.138 347.261 203.391 316.454ZM244.775 470.9C228.781 454.906 222.186 433.075 224.986 412.264L300.096 455.63C303.263 457.457 307.164 457.457 310.328 455.63L398.273 404.856V438.149C398.273 440.485 397.022 442.671 394.997 443.839L328.029 482.502C301.495 497.322 267.327 493.452 244.772 470.9H244.775ZM450.897 445.982C450.466 476.371 430.029 504.027 399.22 512.283C377.373 518.136 355.168 512.932 338.547 500.102L413.659 456.738C416.826 454.911 418.775 451.532 418.775 447.877V346.329L447.609 362.977C449.631 364.145 450.897 366.323 450.897 368.659V445.985V445.982ZM512.282 399.221C506.429 421.068 490.819 437.697 471.397 445.676V358.946C471.397 355.292 469.448 351.912 466.281 350.085L378.336 299.311L407.17 282.663C409.192 281.495 411.712 281.487 413.734 282.655L480.702 321.318C506.805 336.887 520.536 368.415 512.282 399.221Z" fill="white"/>
-  </svg>
-</template>
-
 <script>
-/* ═══════════════════════════════════════════
-   STATE
-═══════════════════════════════════════════ */
-let history     = [];      // current conversation
-let sessions    = [];      // [{id, title, history}]
-let currentId   = null;
-let isStreaming = false;
+const $ = (s) => document.querySelector(s);
+const LOGO = '<svg viewBox="0 0 716 716"><path d="M508.749 317.399C516.777 287.314 508.991 253.884 485.389 230.282C461.788 206.681 428.36 198.895 398.273 206.923C376.231 184.928 343.39 174.956 311.148 183.596C278.906 192.234 255.45 217.292 247.36 247.361C217.291 255.451 192.233 278.91 183.595 311.149C174.957 343.391 184.927 376.232 206.924 398.274C198.896 428.359 206.683 461.789 230.284 485.391C253.885 508.992 287.313 516.779 317.401 508.75C339.442 530.745 372.286 540.717 404.525 532.079C436.767 523.441 460.223 498.384 468.313 468.315C498.383 460.224 523.44 436.766 532.078 404.526C540.716 372.285 530.747 339.443 508.749 317.402V317.399ZM470.899 244.776C486.892 260.77 493.488 282.601 490.687 303.412L415.577 260.046C412.411 258.218 408.509 258.218 405.345 260.046L317.401 310.82V277.526C317.401 275.191 318.652 273.005 320.676 271.837L387.644 233.174C414.178 218.353 448.346 222.223 470.901 244.776H470.899ZM357.837 311.144L398.275 334.491V381.185L357.837 404.532L317.398 381.185V334.491L357.837 311.144ZM264.776 269.693C265.207 239.305 285.644 211.649 316.453 203.393C338.3 197.54 360.505 202.744 377.127 215.573L302.014 258.937C298.848 260.764 296.898 264.144 296.898 267.798V369.346L268.065 352.699C266.043 351.531 264.776 349.353 264.776 347.017V269.691V269.693ZM203.391 316.454C209.244 294.608 224.854 277.978 244.276 269.999V356.73C244.276 360.384 246.226 363.763 249.392 365.591L337.337 416.365L308.503 433.013C306.481 434.181 303.961 434.188 301.939 433.02L234.971 394.357C208.868 378.789 195.138 347.261 203.391 316.454ZM244.775 470.9C228.781 454.906 222.186 433.075 224.986 412.264L300.096 455.63C303.263 457.457 307.164 457.457 310.328 455.63L398.273 404.856V438.149C398.273 440.485 397.022 442.671 394.997 443.839L328.029 482.502C301.495 497.322 267.327 493.452 244.772 470.9H244.775ZM450.897 445.982C450.466 476.371 430.029 504.027 399.22 512.283C377.373 518.136 355.168 512.932 338.547 500.102L413.659 456.738C416.826 454.911 418.775 451.532 418.775 447.877V346.329L447.609 362.977C449.631 364.145 450.897 366.323 450.897 368.659V445.985V445.982ZM512.282 399.221C506.429 421.068 490.819 437.697 471.397 445.676V358.946C471.397 355.292 469.448 351.912 466.281 350.085L378.336 299.311L407.17 282.663C409.192 281.495 411.712 281.487 413.734 282.655L480.702 321.318C506.805 336.887 520.536 368.415 512.282 399.221Z"/></svg>';
+document.querySelectorAll('.logo').forEach((e) => (e.innerHTML = LOGO));
 
-/* ═══════════════════════════════════════════
-   DOM REFS
-═══════════════════════════════════════════ */
-const messagesEl  = document.getElementById('messages');
-const inputEl     = document.getElementById('user-input');
-const sendBtn     = document.getElementById('send-btn');
-const apiKeyEl    = document.getElementById('api-key-input');
-const apiDot      = document.getElementById('api-dot');
-const historyEl   = document.getElementById('chat-history');
-const modelSelect = document.getElementById('model-select');
-const modelBadge  = document.getElementById('model-badge-label');
-const topbarTitle = document.getElementById('topbar-title');
-const welcomeEl   = document.getElementById('welcome');
+let token = localStorage.getItem('rony_token');
+let user = JSON.parse(localStorage.getItem('rony_user') || 'null');
+let chats = [], cur = null, busy = false, mode = 'login';
 
-/* ═══════════════════════════════════════════
-   INIT — restore saved key
-═══════════════════════════════════════════ */
-(function init() {
-  const saved = localStorage.getItem('rony_api_key');
-  if (saved) {
-    apiKeyEl.value = saved;
-    setDot('ok');
-  }
+const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+function fmt(t) {
+  return esc(t)
+    .replace(/```\w*\n?([\s\S]*?)```/g, (_, c) => `<pre><code>${c.trim()}</code></pre>`)
+    .replace(/`([^`\n]+)`/g, '<code>$1</code>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>').replace(/(<pre>[\s\S]*?<\/pre>)/g, (m) => m.replace(/<br>/g, '\n'));
+}
 
-  // Restore sessions
+async function api(url, body, method = 'POST') {
+  let r;
   try {
-    const s = localStorage.getItem('rony_sessions');
-    if (s) sessions = JSON.parse(s);
-  } catch {}
-
-  renderHistory();
-
-  // Update model badge when selector changes
-  modelSelect.addEventListener('change', () => {
-    modelBadge.textContent = modelSelect.options[modelSelect.selectedIndex].text.split('·')[0].split('⚡')[0].trim();
-  });
-})();
-
-/* ═══════════════════════════════════════════
-   API KEY HANDLING
-═══════════════════════════════════════════ */
-function onKeyInput() {
-  const key = apiKeyEl.value.trim();
-  if (key.startsWith('gsk_') && key.length > 20) {
-    setDot('ok');
-    localStorage.setItem('rony_api_key', key);
-  } else if (key.length === 0) {
-    setDot('neutral');
-    localStorage.removeItem('rony_api_key');
-  } else {
-    setDot('error');
-  }
-}
-
-function setDot(state) {
-  apiDot.className = 'api-status-dot';
-  if (state === 'ok')    apiDot.classList.add('ok');
-  if (state === 'error') apiDot.classList.add('error');
-}
-
-function getApiKey() {
-  return apiKeyEl.value.trim() || localStorage.getItem('rony_api_key') || '';
-}
-
-/* ═══════════════════════════════════════════
-   TEXTAREA AUTO-RESIZE + KEYBOARD
-═══════════════════════════════════════════ */
-inputEl.addEventListener('input', () => {
-  inputEl.style.height = 'auto';
-  inputEl.style.height = Math.min(inputEl.scrollHeight, 160) + 'px';
-});
-
-inputEl.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
-  }
-});
-
-/* ═══════════════════════════════════════════
-   SUGGESTIONS / SIDEBAR TOGGLE
-═══════════════════════════════════════════ */
-function suggest(text) {
-  inputEl.value = text;
-  inputEl.dispatchEvent(new Event('input'));
-  inputEl.focus();
-}
-
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
-}
-
-/* ═══════════════════════════════════════════
-   CHAT SESSIONS
-═══════════════════════════════════════════ */
-function newChat() {
-  if (history.length > 0) saveCurrentSession();
-  history    = [];
-  currentId  = null;
-  messagesEl.innerHTML = '';
-  if (!document.getElementById('welcome')) {
-    const w = document.createElement('div');
-    w.id = 'welcome';
-    w.innerHTML = welcomeHTML();
-    messagesEl.appendChild(w);
-  }
-  topbarTitle.textContent = 'New Conversation';
-  renderHistory();
-}
-
-function saveCurrentSession() {
-  if (history.length === 0) return;
-  const title = history[0].content.slice(0, 40) + (history[0].content.length > 40 ? '…' : '');
-  if (currentId) {
-    const s = sessions.find(x => x.id === currentId);
-    if (s) { s.history = [...history]; s.title = title; }
-  } else {
-    currentId = Date.now().toString();
-    sessions.unshift({ id: currentId, title, history: [...history] });
-    if (sessions.length > 30) sessions.pop();
-  }
-  localStorage.setItem('rony_sessions', JSON.stringify(sessions));
-  renderHistory();
-}
-
-function loadSession(id) {
-  const s = sessions.find(x => x.id === id);
-  if (!s) return;
-  saveCurrentSession();
-  currentId = id;
-  history = [...s.history];
-  topbarTitle.textContent = s.title;
-  messagesEl.innerHTML = '';
-  history.forEach(m => {
-    if (m.role === 'user') appendMessage('user', m.content, false);
-    else if (m.role === 'assistant') appendMessage('ai', m.content, false);
-  });
-  renderHistory();
-  scrollBottom();
-}
-
-function renderHistory() {
-  historyEl.innerHTML = '';
-  sessions.forEach(s => {
-    const d = document.createElement('div');
-    d.className = 'history-item' + (s.id === currentId ? ' active' : '');
-    d.innerHTML = `<span class="history-icon">💬</span><span>${escHtml(s.title)}</span>`;
-    d.onclick = () => loadSession(s.id);
-    historyEl.appendChild(d);
-  });
-}
-
-/* ═══════════════════════════════════════════
-   CLEAR CHAT
-═══════════════════════════════════════════ */
-function clearChat() {
-  history = [];
-  currentId = null;
-  messagesEl.innerHTML = '';
-  topbarTitle.textContent = 'New Conversation';
-  const w = document.createElement('div');
-  w.id = 'welcome';
-  w.innerHTML = welcomeHTML();
-  messagesEl.appendChild(w);
-}
-
-function welcomeHTML() {
-  return `
-    <div style="text-align:center;padding:60px 20px 40px;animation:fadeUp 0.5s ease both;">
-      <div class="welcome-orb">
-        <svg viewBox="0 0 716 716" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M508.749 317.399C516.777 287.314 508.991 253.884 485.389 230.282C461.788 206.681 428.36 198.895 398.273 206.923C376.231 184.928 343.39 174.956 311.148 183.596C278.906 192.234 255.45 217.292 247.36 247.361C217.291 255.451 192.233 278.91 183.595 311.149C174.957 343.391 184.927 376.232 206.924 398.274C198.896 428.359 206.683 461.789 230.284 485.391C253.885 508.992 287.313 516.779 317.401 508.75C339.442 530.745 372.286 540.717 404.525 532.079C436.767 523.441 460.223 498.384 468.313 468.315C498.383 460.224 523.44 436.766 532.078 404.526C540.716 372.285 530.747 339.443 508.749 317.402V317.399ZM470.899 244.776C486.892 260.77 493.488 282.601 490.687 303.412L415.577 260.046C412.411 258.218 408.509 258.218 405.345 260.046L317.401 310.82V277.526C317.401 275.191 318.652 273.005 320.676 271.837L387.644 233.174C414.178 218.353 448.346 222.223 470.901 244.776H470.899ZM357.837 311.144L398.275 334.491V381.185L357.837 404.532L317.398 381.185V334.491L357.837 311.144ZM264.776 269.693C265.207 239.305 285.644 211.649 316.453 203.393C338.3 197.54 360.505 202.744 377.127 215.573L302.014 258.937C298.848 260.764 296.898 264.144 296.898 267.798V369.346L268.065 352.699C266.043 351.531 264.776 349.353 264.776 347.017V269.691V269.693ZM203.391 316.454C209.244 294.608 224.854 277.978 244.276 269.999V356.73C244.276 360.384 246.226 363.763 249.392 365.591L337.337 416.365L308.503 433.013C306.481 434.181 303.961 434.188 301.939 433.02L234.971 394.357C208.868 378.789 195.138 347.261 203.391 316.454ZM244.775 470.9C228.781 454.906 222.186 433.075 224.986 412.264L300.096 455.63C303.263 457.457 307.164 457.457 310.328 455.63L398.273 404.856V438.149C398.273 440.485 397.022 442.671 394.997 443.839L328.029 482.502C301.495 497.322 267.327 493.452 244.772 470.9H244.775ZM450.897 445.982C450.466 476.371 430.029 504.027 399.22 512.283C377.373 518.136 355.168 512.932 338.547 500.102L413.659 456.738C416.826 454.911 418.775 451.532 418.775 447.877V346.329L447.609 362.977C449.631 364.145 450.897 366.323 450.897 368.659V445.985V445.982ZM512.282 399.221C506.429 421.068 490.819 437.697 471.397 445.676V358.946C471.397 355.292 469.448 351.912 466.281 350.085L378.336 299.311L407.17 282.663C409.192 281.495 411.712 281.487 413.734 282.655L480.702 321.318C506.805 336.887 520.536 368.415 512.282 399.221Z" fill="white"/>
-        </svg>
-      </div>
-      <h1 class="welcome-h1">rony.ai</h1>
-      <p class="welcome-sub">Your personal AI — powered by Groq (free).<br/>Paste your free API key in the sidebar, then start chatting.</p>
-      <div class="suggestion-grid">
-        <div class="sug-card" onclick="suggest('Explain quantum computing in simple terms')">
-          <div class="sug-icon">⚛️</div>
-          <div class="sug-title">Explain a concept</div>
-          <div class="sug-desc">Break down complex topics simply</div>
-        </div>
-        <div class="sug-card" onclick="suggest('Write a professional email to reschedule a meeting')">
-          <div class="sug-icon">✍️</div>
-          <div class="sug-title">Write for me</div>
-          <div class="sug-desc">Emails, essays, stories & more</div>
-        </div>
-        <div class="sug-card" onclick="suggest('Write a Python function to sort a list of dictionaries by a key')">
-          <div class="sug-icon">💻</div>
-          <div class="sug-title">Code help</div>
-          <div class="sug-desc">Any language, debug or create</div>
-        </div>
-        <div class="sug-card" onclick="suggest('Give me 5 creative business ideas for 2025')">
-          <div class="sug-icon">🧠</div>
-          <div class="sug-title">Brainstorm ideas</div>
-          <div class="sug-desc">Generate & explore concepts</div>
-        </div>
-      </div>
-    </div>`;
-}
-
-/* ═══════════════════════════════════════════
-   LOGO SVG HELPER
-═══════════════════════════════════════════ */
-function logoSVG() {
-  return document.getElementById('logo-svg-tpl').innerHTML;
-}
-
-/* ═══════════════════════════════════════════
-   APPEND MESSAGE
-═══════════════════════════════════════════ */
-function appendMessage(role, text, animate = true) {
-  // Remove welcome screen
-  const w = document.getElementById('welcome');
-  if (w) w.remove();
-
-  const row = document.createElement('div');
-  row.className = `msg-row ${role}`;
-  if (!animate) row.style.animation = 'none';
-
-  const avatar = document.createElement('div');
-  avatar.className = `msg-avatar ${role}`;
-  if (role === 'ai') avatar.innerHTML = logoSVG();
-  else avatar.textContent = '🧑';
-
-  const body = document.createElement('div');
-  body.className = 'msg-body';
-
-  const name = document.createElement('div');
-  name.className = 'msg-name';
-  name.textContent = role === 'ai' ? 'rony.ai' : 'You';
-
-  const bubble = document.createElement('div');
-  bubble.className = 'msg-bubble';
-  bubble.innerHTML = formatText(text);
-
-  body.appendChild(name);
-  body.appendChild(bubble);
-  row.appendChild(avatar);
-  row.appendChild(body);
-  messagesEl.appendChild(row);
-  scrollBottom();
-  return bubble;
-}
-
-/* ═══════════════════════════════════════════
-   TYPING INDICATOR
-═══════════════════════════════════════════ */
-function showTyping() {
-  const w = document.getElementById('welcome');
-  if (w) w.remove();
-
-  const row = document.createElement('div');
-  row.className = 'msg-row ai';
-  row.id = 'typing-row';
-
-  const avatar = document.createElement('div');
-  avatar.className = 'msg-avatar ai';
-  avatar.innerHTML = logoSVG();
-
-  const body = document.createElement('div');
-  body.className = 'msg-body';
-
-  const name = document.createElement('div');
-  name.className = 'msg-name';
-  name.textContent = 'rony.ai';
-
-  const bubble = document.createElement('div');
-  bubble.className = 'msg-bubble';
-  bubble.innerHTML = `<div class="typing-dots">
-    <div class="typing-dot"></div>
-    <div class="typing-dot"></div>
-    <div class="typing-dot"></div>
-  </div>`;
-
-  body.appendChild(name);
-  body.appendChild(bubble);
-  row.appendChild(avatar);
-  row.appendChild(body);
-  messagesEl.appendChild(row);
-  scrollBottom();
-  return bubble;
-}
-
-function hideTyping() {
-  const t = document.getElementById('typing-row');
-  if (t) t.remove();
-}
-
-/* ═══════════════════════════════════════════
-   SEND MESSAGE — with streaming
-═══════════════════════════════════════════ */
-async function sendMessage() {
-  const text = inputEl.value.trim();
-  if (!text || isStreaming) return;
-
-  const apiKey = getApiKey();
-  if (!apiKey || !apiKey.startsWith('gsk_')) {
-    toast('Please paste your Groq API key (starts with gsk_) in the sidebar.', 'error');
-    apiKeyEl.focus();
-    return;
-  }
-
-  appendMessage('user', text);
-  history.push({ role: 'user', content: text });
-  inputEl.value = '';
-  inputEl.style.height = 'auto';
-  sendBtn.disabled = true;
-  isStreaming = true;
-
-  if (history.length === 1) {
-    topbarTitle.textContent = text.slice(0, 40) + (text.length > 40 ? '…' : '');
-  }
-
-  showTyping();
-  let fullReply = '';
-
-  try {
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: modelSelect.value,
-        max_tokens: 2048,
-        temperature: 0.7,
-        stream: true,
-        messages: [
-          {
-            role: 'system',
-            content: 'You are rony.ai, a helpful, friendly, and intelligent AI assistant. Give clear, concise, accurate answers. Use markdown formatting where helpful — code blocks for code, **bold** for key terms, bullet points for lists.'
-          },
-          ...history.map(m => ({
-            role: m.role === 'assistant' ? 'assistant' : 'user',
-            content: m.content
-          }))
-        ]
-      })
+    r = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) },
+      body: body ? JSON.stringify(body) : undefined,
     });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      const msg = err?.error?.message || `HTTP ${res.status}`;
-      if (res.status === 401) throw new Error('Invalid API key. Create a new one at console.groq.com/keys');
-      if (res.status === 429) throw new Error('Rate limit reached. Wait a moment and try again.');
-      throw new Error(msg);
-    }
-
-    // Build streaming bubble
-    hideTyping();
-    const row = document.createElement('div');
-    row.className = 'msg-row ai';
-    const avatar = document.createElement('div');
-    avatar.className = 'msg-avatar ai';
-    avatar.innerHTML = logoSVG();
-    const body = document.createElement('div');
-    body.className = 'msg-body';
-    const nameEl = document.createElement('div');
-    nameEl.className = 'msg-name';
-    nameEl.textContent = 'rony.ai';
-    const bubble = document.createElement('div');
-    bubble.className = 'msg-bubble';
-    bubble.innerHTML = '<span style="opacity:0.5;">▍</span>';
-    body.appendChild(nameEl);
-    body.appendChild(bubble);
-    row.appendChild(avatar);
-    row.appendChild(body);
-    messagesEl.appendChild(row);
-    scrollBottom();
-
-    // Stream SSE
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder();
-    let buf = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buf += decoder.decode(value, { stream: true });
-      const parts = buf.split('\n');
-      buf = parts.pop();
-      for (const line of parts) {
-        if (!line.startsWith('data: ')) continue;
-        const data = line.slice(6).trim();
-        if (!data || data === '[DONE]') continue;
-        try {
-          const json = JSON.parse(data);
-          const delta = json.choices?.[0]?.delta?.content || '';
-          if (delta) {
-            fullReply += delta;
-            bubble.innerHTML = formatText(fullReply) + '<span style="opacity:0.4;">▍</span>';
-            scrollBottom();
-          }
-        } catch {}
-      }
-    }
-
-    bubble.innerHTML = formatText(fullReply);
-    history.push({ role: 'assistant', content: fullReply });
-    saveCurrentSession();
-
-  } catch (err) {
-    hideTyping();
-    console.error('[rony.ai]', err);
-    const userMsg = err.message === 'Failed to fetch'
-      ? 'Could not reach Groq. Check your internet, turn off VPN/ad-blocker for this page, or try another browser.'
-      : err.message;
-    appendMessage('ai', `⚠️ **Error:** ${userMsg}`);
-    toast(userMsg, 'error');
-    if (err.message.includes('API key') || err.message.includes('401')) {
-      apiKeyEl.style.borderColor = 'var(--error)';
-      setDot('error');
-      setTimeout(() => { apiKeyEl.style.borderColor = ''; }, 3000);
-    }
-  } finally {
-    sendBtn.disabled = false;
-    isStreaming = false;
-    inputEl.focus();
+  } catch {
+    throw new Error(location.protocol === 'file:'
+      ? 'Open http://localhost:3000 in your browser. Opening this file directly cannot reach the server.'
+      : 'Cannot reach the server. Check that it is running.');
   }
+  const d = await r.json().catch(() => ({}));
+  if (r.status === 401 && token && !url.includes('/api/login')) logout();
+  if (!r.ok) throw new Error(d.error || 'Request failed (' + r.status + ')');
+  return d;
 }
 
-/* ═══════════════════════════════════════════
-   FORMAT TEXT (Markdown-lite)
-═══════════════════════════════════════════ */
-function formatText(raw) {
-  let t = escHtml(raw);
+/* ── auth ── */
+function setMode(m) {
+  mode = m;
+  $('#tLogin').classList.toggle('on', m === 'login');
+  $('#tSignup').classList.toggle('on', m === 'signup');
+  $('#aName').hidden = m === 'login';
+  $('#aName').required = m === 'signup';
+  $('#aGo').textContent = m === 'login' ? 'Log in' : 'Create account';
+  $('#aPass').autocomplete = m === 'login' ? 'current-password' : 'new-password';
+  $('#authErr').textContent = '';
+}
+$('#tLogin').onclick = () => setMode('login');
+$('#tSignup').onclick = () => setMode('signup');
+$('#authForm').onsubmit = async (e) => {
+  e.preventDefault();
+  $('#aGo').disabled = true; $('#authErr').textContent = '';
+  try {
+    const d = await api('/api/' + mode, { name: $('#aName').value, email: $('#aEmail').value, password: $('#aPass').value });
+    token = d.token; user = d.user;
+    localStorage.setItem('rony_token', token); localStorage.setItem('rony_user', JSON.stringify(user));
+    start();
+  } catch (err) { $('#authErr').textContent = err.message; }
+  $('#aGo').disabled = false;
+};
+function logout() {
+  token = null; user = null;
+  localStorage.removeItem('rony_token'); localStorage.removeItem('rony_user');
+  $('#app').classList.remove('on'); $('#auth').style.display = 'grid';
+}
+$('#out').onclick = logout;
 
-  // Code blocks (must come first)
-  t = t.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) =>
-    `<pre><code class="lang-${lang}">${code.trim()}</code></pre>`
-  );
-
-  // Inline code
-  t = t.replace(/`([^`\n]+)`/g, '<code>$1</code>');
-
-  // Bold
-  t = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-
-  // Italic
-  t = t.replace(/\*(.+?)\*/g, '<em>$1</em>');
-
-  // Headers
-  t = t.replace(/^### (.+)$/gm, '<h3 style="margin:10px 0 4px;font-size:1rem;font-family:Syne,sans-serif;">$1</h3>');
-  t = t.replace(/^## (.+)$/gm,  '<h2 style="margin:12px 0 4px;font-size:1.1rem;font-family:Syne,sans-serif;">$1</h2>');
-  t = t.replace(/^# (.+)$/gm,   '<h1 style="margin:14px 0 6px;font-size:1.25rem;font-family:Syne,sans-serif;">$1</h1>');
-
-  // Bullet lists
-  t = t.replace(/^[\*\-] (.+)$/gm, '<li>$1</li>');
-  t = t.replace(/(<li>.*<\/li>(\n|$))+/g, m => `<ul>${m}</ul>`);
-
-  // Numbered lists
-  t = t.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
-
-  // Horizontal rule
-  t = t.replace(/^---$/gm, '<hr style="border:none;border-top:1px solid var(--border2);margin:12px 0;">');
-
-  // Line breaks (avoid inside pre)
-  t = t.replace(/\n/g, '<br>');
-
-  // Fix: don't put <br> inside pre blocks
-  t = t.replace(/<pre>([\s\S]*?)<\/pre>/g, (_, inner) =>
-    `<pre>${inner.replace(/<br>/g, '\n')}</pre>`
-  );
-
-  return t;
+/* ── chats ── */
+const store = () => 'rony_chats_' + user.email;
+function save() {
+  const clean = chats.map((c) => ({ id: c.id, title: c.title, msgs: c.msgs.filter((m) => !m.err).map((m) => ({ role: m.role, content: m.image ? '(image)' : m.content })) }));
+  localStorage.setItem(store(), JSON.stringify(clean.slice(0, 40)));
+}
+function newChat() {
+  if (cur && !cur.msgs.length) return render();
+  cur = { id: Date.now(), title: 'New chat', msgs: [] };
+  chats.unshift(cur); render();
+}
+function open(id) { cur = chats.find((c) => c.id === id); render(); }
+function render(pending) {
+  $('#hist').innerHTML = '';
+  chats.filter((c) => c.msgs.length).forEach((c) => {
+    const d = document.createElement('div');
+    d.className = 'h' + (c === cur ? ' on' : ''); d.textContent = c.title; d.onclick = () => open(c.id);
+    $('#hist').appendChild(d);
+  });
+  const row = (m) => `<div class="row ${m.role}${m.err ? ' err' : ''}">${m.role === 'assistant' && !m.err ? `<div class="logo">${LOGO}</div>` : ''}<div class="bub">${m.image ? `<img src="${m.image}" alt="Generated image">` : fmt(m.content)}</div></div>`;
+  $('#list').innerHTML = !cur.msgs.length && !pending
+    ? `<div class="empty"><div class="logo">${LOGO}</div><h1>How can I help?</h1><p>Ask anything, or type /imagine and describe a picture.</p></div>`
+    : cur.msgs.map(row).join('') + (pending ? row({ role: 'assistant', content: '<span class="dots">Thinking…</span>' }).replace('&lt;span class="dots"&gt;Thinking…&lt;/span&gt;', '<span class="dots">Thinking…</span>') : '');
+  $('#msgs').scrollTop = $('#msgs').scrollHeight;
 }
 
-function escHtml(str) {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+async function send() {
+  const text = $('#in').value.trim();
+  if (!text || busy) return;
+  busy = true; $('#send').disabled = true; $('#in').value = ''; $('#in').style.height = 'auto';
+  cur.msgs.push({ role: 'user', content: text });
+  if (cur.msgs.length === 1) cur.title = text.slice(0, 40);
+  render(true);
+  try {
+    if (text.startsWith('/imagine ')) {
+      const d = await api('/api/imagine', { prompt: text.slice(9) });
+      cur.msgs.push({ role: 'assistant', content: '', image: d.image });
+    } else {
+      const history = cur.msgs.filter((m) => m.content && !m.err && !m.image);
+      const d = await api('/api/chat', { messages: history, model: $('#model').value });
+      cur.msgs.push({ role: 'assistant', content: d.reply });
+    }
+  } catch (err) { cur.msgs.push({ role: 'assistant', content: err.message, err: true }); }
+  busy = false; $('#send').disabled = false; save(); render(); $('#in').focus();
 }
 
-/* ═══════════════════════════════════════════
-   SCROLL
-═══════════════════════════════════════════ */
-function scrollBottom() {
-  const el = document.getElementById('chat-scroll');
-  el.scrollTop = el.scrollHeight;
+$('#send').onclick = send;
+$('#newBtn').onclick = $('#newBtn2').onclick = newChat;
+$('#in').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
+$('#in').addEventListener('input', (e) => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 150) + 'px'; });
+
+async function start() {
+  $('#auth').style.display = 'none'; $('#app').classList.add('on');
+  $('#who').textContent = user.name;
+  try { chats = JSON.parse(localStorage.getItem(store()) || '[]'); } catch { chats = []; }
+  cur = null; newChat();
+  try {
+    const m = await api('/api/models', null, 'GET');
+    $('#model').innerHTML = m.models.map((id) => `<option value="${id}"${id === m.default ? ' selected' : ''}>${id}</option>`).join('');
+  } catch (err) { $('#model').innerHTML = '<option value="">(default model)</option>'; }
 }
 
-/* ═══════════════════════════════════════════
-   TOAST
-═══════════════════════════════════════════ */
-function toast(msg, type = 'error') {
-  const c = document.getElementById('toast-container');
-  const d = document.createElement('div');
-  d.className = `toast ${type}`;
-  d.textContent = msg;
-  c.appendChild(d);
-  setTimeout(() => d.remove(), 5000);
-}
+if (location.protocol === 'file:') $('#authErr').textContent = 'Open http://localhost:3000 instead of this file.';
+if (token && user) start();
 </script>
 </body>
 </html>
